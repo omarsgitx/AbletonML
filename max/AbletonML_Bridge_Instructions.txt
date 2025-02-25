@@ -1,0 +1,154 @@
+# AbletonML Bridge - Max for Live Device Instructions
+
+This document provides instructions for creating the Max for Live device that will serve as a bridge between our macOS app and Ableton Live.
+
+## Setup Instructions
+
+1. Open Max
+2. Create a new Max for Live MIDI Effect (File > New From Template > Max for Live Device > MIDI Effect)
+3. Save it as "AbletonML_Bridge.amxd" in your Ableton User Library
+
+## Device Structure
+
+The device should contain the following components:
+
+### 1. UDP Receiver
+- Use `udpreceive` object to listen for commands from our app
+- Set to port 7400 (or another port of your choice)
+
+### 2. Command Parser
+- Parse incoming UDP messages
+- Extract command type and parameters
+
+### 3. Ableton Control
+- Use `live.object` to control Ableton parameters
+- Set up objects for tempo, tracks, devices, etc.
+
+### 4. Feedback Sender
+- Use `udpsend` to send feedback to our app
+- Connect to localhost port 7401 (or another port of your choice)
+
+## Max Patch Code
+
+Here's a simplified version of the Max patch code:
+
+```
+----------begin_max5_patcher----------
+{
+	"boxes" : [ 		{
+			"box" : 			{
+				"maxclass" : "newobj",
+				"text" : "udpreceive 7400",
+				"patching_rect" : [ 50.0, 100.0, 100.0, 22.0 ],
+				"id" : "obj-1",
+				"numinlets" : 1,
+				"numoutlets" : 1,
+				"outlettype" : [ "" ]
+			}
+
+		}
+, 		{
+			"box" : 			{
+				"maxclass" : "newobj",
+				"text" : "udpsend localhost 7401",
+				"patching_rect" : [ 50.0, 400.0, 140.0, 22.0 ],
+				"id" : "obj-2",
+				"numinlets" : 1,
+				"numoutlets" : 0
+			}
+
+		}
+, 		{
+			"box" : 			{
+				"maxclass" : "newobj",
+				"text" : "route tempo create add_effect",
+				"patching_rect" : [ 50.0, 150.0, 180.0, 22.0 ],
+				"id" : "obj-3",
+				"numinlets" : 1,
+				"numoutlets" : 4,
+				"outlettype" : [ "", "", "", "" ]
+			}
+
+		}
+, 		{
+			"box" : 			{
+				"maxclass" : "newobj",
+				"text" : "live.object",
+				"patching_rect" : [ 50.0, 200.0, 62.0, 22.0 ],
+				"id" : "obj-4",
+				"numinlets" : 2,
+				"numoutlets" : 1,
+				"outlettype" : [ "" ]
+			}
+
+		}
+, 		{
+			"box" : 			{
+				"maxclass" : "message",
+				"text" : "get live_set tempo value",
+				"patching_rect" : [ 50.0, 250.0, 150.0, 22.0 ],
+				"id" : "obj-5",
+				"numinlets" : 2,
+				"numoutlets" : 1,
+				"outlettype" : [ "" ]
+			}
+
+		}
+, 		{
+			"box" : 			{
+				"maxclass" : "message",
+				"text" : "set live_set tempo value $1",
+				"patching_rect" : [ 50.0, 300.0, 150.0, 22.0 ],
+				"id" : "obj-6",
+				"numinlets" : 2,
+				"numoutlets" : 1,
+				"outlettype" : [ "" ]
+			}
+
+		}
+ ],
+	"lines" : [ 		{
+			"patchline" : 			{
+				"source" : [ "obj-1", 0 ],
+				"destination" : [ "obj-3", 0 ]
+			}
+
+		}
+, 		{
+			"patchline" : 			{
+				"source" : [ "obj-3", 0 ],
+				"destination" : [ "obj-6", 0 ]
+			}
+
+		}
+, 		{
+			"patchline" : 			{
+				"source" : [ "obj-6", 0 ],
+				"destination" : [ "obj-4", 0 ]
+			}
+
+		}
+, 		{
+			"patchline" : 			{
+				"source" : [ "obj-4", 0 ],
+				"destination" : [ "obj-2", 0 ]
+			}
+
+		}
+ ]
+}
+----------end_max5_patcher----------
+```
+
+This is a simplified version. The actual device will need more complex routing and error handling.
+
+## Testing the Device
+
+1. Create the device in Max
+2. Save it and drag it into an Ableton Live MIDI track
+3. Use a UDP testing tool (like Max's built-in `udpsend` object in a separate patch) to send test commands
+4. Verify that Ableton parameters change in response to commands
+
+## Next Steps
+
+Once the Max for Live device is working, we'll create the Python backend that will send commands to it via UDP. 

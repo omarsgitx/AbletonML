@@ -1,0 +1,19 @@
+{
+  "name": "ableton-ml",
+  "version": "1.0.0",
+  "description": "AbletonML - Control Ableton Live with natural language",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.2.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  }
+} 
