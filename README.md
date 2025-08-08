@@ -101,6 +101,13 @@ AbletonML is a natural language interface for controlling Ableton Live. It allow
 - `"add echo to track 3"`
 - `"add compressor to track 4"`
 
+#### Effect Parameters
+- `"set reverb dry/wet to 30%"`
+- `"set delay mix to 50"`
+- `"set compressor amount to 75%"`
+- `"set reverb wet to 80"`
+- `"set delay level to 25%"`
+
 ## Architecture
 
 AbletonML consists of several components:

@@ -33,6 +33,13 @@ def test_nlp_parsing():
         "add echo to track 3",
         "add compressor to track 4",
         
+        # Phase 3: Effect parameter commands
+        "set reverb dry/wet to 30%",
+        "set delay mix to 50",
+        "set compressor amount to 75%",
+        "set reverb wet to 80",
+        "set delay level to 25%",
+        
         # Existing commands (should still work)
         "add piano",
         "add synth",
@@ -55,7 +62,12 @@ def test_nlp_parsing():
         
         # Check if it's correct
         if "reverb" in command or "delay" in command or "echo" in command or "compressor" in command:
-            if parsed["intent"] == "add_effect":
+            if "to" in command and ("wet" in command or "dry" in command or "mix" in command or "amount" in command or "level" in command):
+                if parsed["intent"] == "set_effect_param":
+                    print("  ✅ Correctly identified as set_effect_param")
+                else:
+                    print("  ❌ Should be set_effect_param but got:", parsed["intent"])
+            elif parsed["intent"] == "add_effect":
                 print("  ✅ Correctly identified as add_effect")
             else:
                 print("  ❌ Should be add_effect but got:", parsed["intent"])

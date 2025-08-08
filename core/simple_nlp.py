@@ -17,7 +17,14 @@ class SimpleNLPModule:
             "compressor": "compressor",
             "piano": "piano",
             "synth": "synth",
-            "drums": "drums"
+            "drums": "drums",
+            "wet": "wet",
+            "dry": "dry",
+            "dry/wet": "dry/wet",
+            "mix": "dry/wet",
+            "amount": "amount",
+            "level": "level",
+            "intensity": "intensity"
         }
         
     def parse_command(self, command_text):
@@ -57,6 +64,15 @@ class SimpleNLPModule:
                 result["intent"] = "create"  # Adding track
             else:
                 result["intent"] = "add_effect"  # Default to effect if unclear
+        elif verb == "set":
+            # Check if this is setting effect parameters
+            has_effect = any(word in ["reverb", "delay", "compressor"] for word in normalized_words)
+            has_parameter = any(word in ["wet", "dry", "dry/wet", "mix", "amount", "level", "intensity"] for word in normalized_words)
+            
+            if has_effect and has_parameter:
+                result["intent"] = "set_effect_param"
+            else:
+                result["intent"] = "set"  # Default to regular set commands
         elif verb:
             for intent, patterns in self.command_patterns.items():
                 if verb in patterns:
@@ -95,6 +111,23 @@ class SimpleNLPModule:
                         result["parameters"]["track_number"] = int(normalized_words[i + 1])
                     except ValueError:
                         pass
+                        
+        elif result["intent"] == "set_effect_param":
+            # Look for effect, parameter, and value
+            for i, word in enumerate(normalized_words):
+                if word in ["reverb", "delay", "compressor"]:
+                    result["parameters"]["effect"] = word
+                if word in ["wet", "dry", "dry/wet", "mix", "amount", "level", "intensity"]:
+                    result["parameters"]["parameter"] = word
+                if word == "to" and i + 1 < len(normalized_words):
+                    # Look for numeric value (with optional %)
+                    try:
+                        value_str = normalized_words[i + 1].replace('%', '')
+                        value = float(value_str)
+                        result["parameters"]["value"] = value
+                        break
+                    except ValueError:
+                        continue
                         
 
         

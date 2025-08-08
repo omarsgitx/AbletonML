@@ -248,6 +248,24 @@ class MaxController:
             })
         return result
     
+    def set_effect_param(self, effect, parameter, value):
+        """Set an effect parameter value"""
+        if not self.connected:
+            logger.debug(f"Simulation: Setting {effect} {parameter} to {value}%")
+            # In simulation mode, we could update the effect in the track
+            # For now, just log the action
+            return True
+            
+        result = self._send_command('set_effect_param', {
+            'effect': effect,
+            'parameter': parameter,
+            'value': value
+        })
+        
+        if result:
+            logger.info(f"Set {effect} {parameter} to {value}%")
+        return result
+    
     def get_project_state(self):
         """Get the current project state"""
         logger.debug("get_project_state called")
@@ -270,6 +288,8 @@ class MaxController:
             return self.set_tempo(params["value"])
         elif action_type == "add_effect":
             return self.add_effect(params["effect_type"], params["track"])
+        elif action_type == "set_effect_param":
+            return self.set_effect_param(params["effect"], params["parameter"], params["value"])
         else:
             logger.warning(f"Unknown action type: {action_type}")
             return False

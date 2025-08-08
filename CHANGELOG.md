@@ -41,6 +41,9 @@
 #### Effects
 - `'add reverb to track 2'` / `'add delay to track 1'` / `'add echo to track 3'`
 
+#### Effect Parameters
+- `'set reverb dry/wet to 30%'` / `'set delay mix to 50'` / `'set compressor amount to 75%'`
+
 ### 🚀 Ready for
 - Testing with Ableton Live and Max for Live device
 - Electron GUI deployment
