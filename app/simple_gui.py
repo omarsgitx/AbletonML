@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.nlp import NLPModule
 from core.action_mapper import ActionMapper
-from core.ableton_controller import AbletonController
+from core.max_controller import MaxController
 
 class AbletonMLApp:
     def __init__(self, root):
@@ -38,7 +38,7 @@ class AbletonMLApp:
         logger.debug("Initializing Action Mapper")
         self.mapper = ActionMapper()
         logger.debug("Initializing Ableton Controller")
-        self.controller = AbletonController()
+        self.controller = MaxController()
         
         # Create the UI
         logger.debug("Creating UI widgets")
