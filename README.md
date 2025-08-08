@@ -25,11 +25,19 @@ AbletonML is a natural language interface for controlling Ableton Live. It allow
    ```
 
 2. Install Python dependencies:
-   ```
+   ```bash
+   # Create virtual environment (recommended)
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   
+   # Install dependencies
    pip install -r requirements.txt
+   
+   # For macOS users: If you get tkinter errors, install:
+   brew install python-tk@3.13
    ```
 
-3. Install Node.js dependencies:
+3. Install Node.js dependencies (for Electron GUI):
    ```
    npm install
    ```
@@ -41,10 +49,28 @@ AbletonML is a natural language interface for controlling Ableton Live. It allow
 
 ## Usage
 
+### Quick Start (Recommended)
+1. Start the simple test GUI:
+   ```bash
+   source venv/bin/activate
+   python test_simple_gui.py
+   ```
+
+2. Type commands like:
+   - `set tempo to 120`
+   - `create midi track`
+   - `add piano`
+   - `add reverb to track 2`
+
+### Full Setup with Ableton Live
 1. Start Ableton Live and load the AbletonML_Bridge device on a MIDI track.
 
 2. Start the AbletonML application:
-   ```
+   ```bash
+   # Option 1: Simple GUI (faster)
+   python app/simple_gui.py
+   
+   # Option 2: Electron GUI
    npm start
    ```
 
@@ -52,12 +78,14 @@ AbletonML is a natural language interface for controlling Ableton Live. It allow
 
 ### Example Commands
 
-- "Create a midi track"
-- "Create an audio track"
-- "Add piano to the current track"
-- "Add drums to the current track"
-- "Set tempo to 120 BPM"
-- "Add reverb to track 2"
+- `"set tempo to 120"`
+- `"create midi track"`
+- `"create audio track"`
+- `"add piano"`
+- `"add synth"`
+- `"add drums"`
+- `"add reverb to track 2"`
+- `"add delay to track 1"`
 
 ## Architecture
 
@@ -84,17 +112,32 @@ AbletonML consists of several components:
 
 ## Troubleshooting
 
-### Max for Live Device Not Receiving Commands
+### Tkinter Import Error (macOS)
+```bash
+# Install tkinter support
+brew install python-tk@3.13
+# Recreate virtual environment
+rm -rf venv
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
+### Max for Live Device Not Receiving Commands
 - Make sure the Max for Live device is loaded in Ableton Live
 - Check that UDP port 7400 is not blocked by a firewall
 - Restart the AbletonML application and Ableton Live
 
 ### Commands Not Being Recognized
-
 - Try using simpler commands
 - Check the exact wording in the example commands
 - Make sure the NLP module is properly initialized
+
+### Testing Without Ableton Live
+The system works in simulation mode when Ableton Live is not connected:
+```bash
+python test_simple_gui.py
+```
 
 ## Development
 
