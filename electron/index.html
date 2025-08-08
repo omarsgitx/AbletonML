@@ -39,30 +39,46 @@
         </div>
       </div>
 
-      <!-- Right Panel - Project State -->
-      <div class="project-state">
-        <div class="panel-header">
-          <h2>Project State</h2>
+      <!-- Right Panel - Split into Project State and Command History -->
+      <div class="right-panel">
+        <!-- Project State -->
+        <div class="project-state">
+          <div class="panel-header">
+            <h2>Project State</h2>
+          </div>
+          
+          <div class="state-section">
+            <div class="section-header">
+              <i class="fa-solid fa-gauge-high"></i>
+              <h3>Tempo</h3>
+            </div>
+            <div class="tempo-display">
+              <span id="tempo-value">120</span>
+              <span class="unit">BPM</span>
+            </div>
+          </div>
+          
+          <div class="state-section">
+            <div class="section-header">
+              <i class="fa-solid fa-list"></i>
+              <h3>Tracks</h3>
+            </div>
+            <div id="tracks-list" class="tracks-list">
+              <!-- Tracks will be added here dynamically -->
+            </div>
+          </div>
         </div>
-        
-        <div class="state-section">
-          <div class="section-header">
-            <i class="fa-solid fa-gauge-high"></i>
-            <h3>Tempo</h3>
+
+        <!-- Command History -->
+        <div class="command-history">
+          <div class="panel-header">
+            <h2>Command History</h2>
+            <button id="clear-history-btn" class="icon-btn" title="Clear History">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           </div>
-          <div class="tempo-display">
-            <span id="tempo-value">120</span>
-            <span class="unit">BPM</span>
-          </div>
-        </div>
-        
-        <div class="state-section">
-          <div class="section-header">
-            <i class="fa-solid fa-list"></i>
-            <h3>Tracks</h3>
-          </div>
-          <div id="tracks-list" class="tracks-list">
-            <!-- Tracks will be added here dynamically -->
+          <div id="history-list" class="history-list">
+            <!-- Command history will be added here dynamically -->
           </div>
         </div>
       </div>

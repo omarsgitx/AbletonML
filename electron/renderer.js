@@ -9,6 +9,12 @@ const tracksList = document.getElementById('tracks-list');
 const connectionStatus = document.getElementById('connection-status');
 const statusMessage = document.getElementById('status-message');
 const statusDot = document.querySelector('.status-dot');
+const historyList = document.getElementById('history-list');
+const clearHistoryBtn = document.getElementById('clear-history-btn');
+
+// Command history storage
+let commandHistory = [];
+const MAX_HISTORY = 10;
 
 // Connect to Socket.io server
 const socket = io('http://localhost:3000');
@@ -26,13 +32,7 @@ socket.on('disconnect', () => {
   updateConnectionStatus(false);
 });
 
-socket.on('response', (data) => {
-  if (data.success) {
-    addToOutput(data.message, 'success');
-  } else {
-    addToOutput(`Error: ${data.message}`, 'error');
-  }
-});
+
 
 socket.on('project_state', (state) => {
   updateProjectState(state);
@@ -50,6 +50,8 @@ commandInput.addEventListener('keypress', (e) => {
   }
 });
 
+clearHistoryBtn.addEventListener('click', clearHistory);
+
 // Functions
 function sendCommand() {
   const command = commandInput.value.trim();
@@ -57,6 +59,9 @@ function sendCommand() {
   
   // Add command to output
   addToOutput(`> ${command}`, 'command');
+  
+  // Add to command history
+  addToHistory(command, 'pending');
   
   // Send command to server
   socket.emit('command', { command });
@@ -154,6 +159,94 @@ function displayMaxStatus(data) {
   addToOutput('3. Drag the AbletonML_Bridge.amxd device from the max folder to the track', 'info');
   addToOutput('4. Make sure the device is enabled', 'info');
 }
+
+// Command History Functions
+function addToHistory(command, status, details = '') {
+  const timestamp = new Date().toLocaleTimeString();
+  const historyItem = {
+    command,
+    status,
+    timestamp,
+    details
+  };
+  
+  // Add to beginning of array
+  commandHistory.unshift(historyItem);
+  
+  // Keep only last MAX_HISTORY items
+  if (commandHistory.length > MAX_HISTORY) {
+    commandHistory = commandHistory.slice(0, MAX_HISTORY);
+  }
+  
+  updateHistoryDisplay();
+}
+
+function updateHistoryDisplay() {
+  historyList.innerHTML = '';
+  
+  commandHistory.forEach(item => {
+    const historyElement = document.createElement('div');
+    historyElement.classList.add('history-item');
+    historyElement.classList.add(item.status);
+    
+    const statusIcon = document.createElement('span');
+    statusIcon.classList.add('status-icon');
+    
+    if (item.status === 'success') {
+      statusIcon.innerHTML = '✅';
+      statusIcon.classList.add('success');
+    } else if (item.status === 'error') {
+      statusIcon.innerHTML = '❌';
+      statusIcon.classList.add('error');
+    } else if (item.status === 'pending') {
+      statusIcon.innerHTML = '⏳';
+    }
+    
+    const commandText = document.createElement('span');
+    commandText.classList.add('command-text');
+    commandText.textContent = item.command;
+    
+    const timestamp = document.createElement('span');
+    timestamp.classList.add('timestamp');
+    timestamp.textContent = item.timestamp;
+    
+    historyElement.appendChild(statusIcon);
+    historyElement.appendChild(commandText);
+    historyElement.appendChild(timestamp);
+    
+    historyList.appendChild(historyElement);
+  });
+}
+
+function clearHistory() {
+  commandHistory = [];
+  updateHistoryDisplay();
+}
+
+// Update socket response handler to update history
+socket.on('response', (data) => {
+  if (data.success) {
+    addToOutput(data.message, 'success');
+    // Update the most recent pending command to success
+    if (commandHistory.length > 0 && commandHistory[0].status === 'pending') {
+      commandHistory[0].status = 'success';
+      commandHistory[0].details = data.message;
+      updateHistoryDisplay();
+    }
+    // Update status bar
+    statusMessage.textContent = `Executed: ${data.message}`;
+  } else {
+    addToOutput(`Error: ${data.message}`, 'error');
+    // Update the most recent pending command to error
+    if (commandHistory.length > 0 && commandHistory[0].status === 'pending') {
+      commandHistory[0].status = 'error';
+      commandHistory[0].details = data.message;
+      updateHistoryDisplay();
+    }
+    // Update status bar
+    statusMessage.textContent = `Error: ${data.message}`;
+  }
+});
 
 // Add welcome message
 addToOutput('Welcome to AbletonML');

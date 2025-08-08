@@ -166,12 +166,93 @@ body {
 }
 
 /* Project State (Right Panel) */
+/* Right Panel Layout */
+.right-panel {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--panel-bg);
+  border-left: 1px solid var(--border-color);
+}
+
+/* Project State */
 .project-state {
-  width: 300px;
+  flex: 1;
   background-color: var(--panel-bg);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Command History */
+.command-history {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.command-history .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.command-history .panel-header h2 {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.history-list {
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background-color: var(--input-bg);
+  border-radius: 4px;
+  border-left: 3px solid var(--border-color);
+  transition: border-color 0.2s;
+}
+
+.history-item.success {
+  border-left-color: var(--success-color);
+}
+
+.history-item.error {
+  border-left-color: var(--error-color);
+}
+
+.history-item .status-icon {
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+.history-item .status-icon.success {
+  color: var(--success-color);
+}
+
+.history-item .status-icon.error {
+  color: var(--error-color);
+}
+
+.history-item .command-text {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.history-item .timestamp {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-left: 10px;
 }
 
 .panel-header {
