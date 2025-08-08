@@ -29,10 +29,17 @@
 - **WORKING**: All basic commands: tempo, track creation, instruments, effects
 
 ### 🎵 Supported Commands
-- `'set tempo to 120'`
-- `'create midi track'` / `'create audio track'`
+#### Tempo Control
+- `'set tempo to 120'` / `'change bpm to 90'` / `'set bpm to 140'`
+
+#### Track Creation
+- `'create midi track'` / `'create audio track'` / `'add audio track'`
+
+#### Instruments
 - `'add piano'` / `'add synth'` / `'add drums'`
-- `'add reverb to track 2'` / `'add delay to track 1'`
+
+#### Effects
+- `'add reverb to track 2'` / `'add delay to track 1'` / `'add echo to track 3'`
 
 ### 🚀 Ready for
 - Testing with Ableton Live and Max for Live device

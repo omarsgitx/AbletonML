@@ -15,13 +15,28 @@ def test_nlp_parsing():
     mapper = ActionMapper()
     
     test_commands = [
+        # Phase 1: Enhanced tempo commands
         "set tempo to 120",
+        "change bpm to 90",
+        "set bpm to 140",
+        "adjust tempo to 80",
+        
+        # Phase 1: Enhanced track creation
         "create midi track",
-        "add piano",
+        "create audio track",
+        "add audio track",
+        "make midi track",
+        
+        # Phase 1: Enhanced effect commands
         "add reverb to track 2",
         "add delay to track 1",
-        "create audio track",
-        "add synth"
+        "add echo to track 3",
+        "add compressor to track 4",
+        
+        # Existing commands (should still work)
+        "add piano",
+        "add synth",
+        "add drums"
     ]
     
     print("Testing NLP Parsing Fix")
@@ -39,12 +54,12 @@ def test_nlp_parsing():
         print(f"  Actions: {actions}")
         
         # Check if it's correct
-        if "reverb" in command or "delay" in command:
+        if "reverb" in command or "delay" in command or "echo" in command or "compressor" in command:
             if parsed["intent"] == "add_effect":
                 print("  ✅ Correctly identified as add_effect")
             else:
                 print("  ❌ Should be add_effect but got:", parsed["intent"])
-        elif "piano" in command or "synth" in command:
+        elif "piano" in command or "synth" in command or "drums" in command:
             if parsed["intent"] == "create":
                 print("  ✅ Correctly identified as create (instrument)")
             else:
@@ -54,7 +69,7 @@ def test_nlp_parsing():
                 print("  ✅ Correctly identified as create (track)")
             else:
                 print("  ❌ Should be create but got:", parsed["intent"])
-        elif "tempo" in command:
+        elif "tempo" in command or "bpm" in command:
             if parsed["intent"] == "set":
                 print("  ✅ Correctly identified as set")
             else:

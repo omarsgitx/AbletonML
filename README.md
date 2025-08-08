@@ -78,14 +78,28 @@ AbletonML is a natural language interface for controlling Ableton Live. It allow
 
 ### Example Commands
 
+#### Tempo Control
 - `"set tempo to 120"`
+- `"change bpm to 90"`
+- `"set bpm to 140"`
+- `"adjust tempo to 80"`
+
+#### Track Creation
 - `"create midi track"`
 - `"create audio track"`
+- `"add audio track"`
+- `"make midi track"`
+
+#### Instruments
 - `"add piano"`
 - `"add synth"`
 - `"add drums"`
+
+#### Effects
 - `"add reverb to track 2"`
 - `"add delay to track 1"`
+- `"add echo to track 3"`
+- `"add compressor to track 4"`
 
 ## Architecture
 

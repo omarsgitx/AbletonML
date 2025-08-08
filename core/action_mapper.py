@@ -47,12 +47,15 @@ class ActionMapper:
         actions = []
         
         if "tempo" in parameters:
-            actions.append({
-                "action": "set_tempo",
-                "params": {
-                    "value": parameters["tempo"]
-                }
-            })
+            # Validate tempo range (20-999 BPM)
+            tempo_value = parameters["tempo"]
+            if 20 <= tempo_value <= 999:
+                actions.append({
+                    "action": "set_tempo",
+                    "params": {
+                        "value": tempo_value
+                    }
+                })
             
         return actions
     
