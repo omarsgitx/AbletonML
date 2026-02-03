@@ -1,20 +1,30 @@
 # AbletonML
 
-AbletonML is a natural language interface for controlling Ableton Live. It allows you to control Ableton Live using simple English commands like "create a midi track with piano" or "set tempo to 120 BPM".
+AbletonML is an accessibility-focused interface for Ableton Live: control your session with **voice** (F4 wake key + speech) or **text** using natural language. Commands like "set tempo to 120" or "add reverb" are routed over OSC (AbletonOSC) and automated macros (PyAutoGUI) so you can work hands-free.
 
 ## Features
 
-- Control Ableton Live using natural language commands
-- Modern Electron-based GUI
-- Max for Live integration
-- Real-time project state visualization
+- **Voice control**: Press F4, speak a command; speech is transcribed and executed (text input also supported).
+- **Natural language**: Type or say "create midi track", "set tempo to 125", "add reverb to track 2".
+- **OSC + macro backend**: OSC for transport, tempo, and track creation; UI automation for searching and loading instruments/effects via Ableton’s browser.
+- **Command routing**: Intent is routed to the right backend (OSC vs. macro) automatically.
+- **Simple GUI**: Tk-based app with console output, project state, and a "Start Voice Assistant" toggle.
+- Real-time project state visualization.
 
 ## Requirements
 
 - macOS (tested on macOS 11+)
-- Ableton Live 11 or 12 with Max for Live
-- Node.js 14+ and npm
+- Ableton Live 11 or 12 with **AbletonOSC** enabled (Preferences → Link/Tempo/MIDI). Max for Live is optional.
 - Python 3.9+
+
+### OS Permissions (macOS)
+
+For the **voice assistant** (F4 hotkey) and **macro actions** (e.g. Add Instrument / Add Effect via browser) to work, grant **Accessibility** permission to the app that runs Python (Terminal, iTerm, Cursor, VS Code, etc.):
+
+1. Open **System Settings** → **Privacy & Security** → **Privacy** → **Accessibility**.
+2. Add your **Terminal** (or **Cursor** / **Code**) and enable the toggle.
+
+Without this, the global F4 key may not be detected when the app is in the background, and PyAutoGUI may not send keystrokes to Ableton.
 
 ## Installation
 
@@ -26,157 +36,103 @@ AbletonML is a natural language interface for controlling Ableton Live. It allow
 
 2. Install Python dependencies:
    ```bash
-   # Create virtual environment (recommended)
    python3 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
-   
-   # Install dependencies
    pip install -r requirements.txt
    
-   # For macOS users: If you get tkinter errors, install:
+   # macOS: if you get tkinter errors:
    brew install python-tk@3.13
    ```
 
-3. Install Node.js dependencies (for Electron GUI):
+3. Enable AbletonOSC in Ableton Live:
+   - **Live** → **Preferences** → **Link/Tempo/MIDI** → under "Control Surface", select **AbletonOSC** (listens on port 11000).
+
+4. (Optional) Node.js and Electron for the Electron GUI:
    ```
    npm install
    ```
 
-4. Set up the Max for Live device:
-   - Open the `max/AbletonML_Bridge.maxpat` file in Max
-   - Export it as a Max for Live device (see instructions in `max/export_to_amxd.txt`)
-   - Load the device into a MIDI track in Ableton Live
-
 ## Usage
 
-### Quick Start (Recommended)
-1. Start the simple test GUI:
+### Quick Start
+1. Start the simple GUI:
    ```bash
    source venv/bin/activate
-   python test_simple_gui.py
-   ```
-
-2. Type commands like:
-   - `set tempo to 120`
-   - `create midi track`
-   - `add piano`
-   - `add reverb to track 2`
-
-### Full Setup with Ableton Live
-1. Start Ableton Live and load the AbletonML_Bridge device on a MIDI track.
-
-2. Start the AbletonML application:
-   ```bash
-   # Option 1: Simple GUI (faster)
    python app/simple_gui.py
-   
-   # Option 2: Electron GUI
-   npm start
    ```
 
-3. Type natural language commands in the input field and press Enter or click "Execute".
+2. Type commands (e.g. "set tempo to 120", "create midi track", "add reverb to track 2") and press Enter or click **Execute**.
+
+3. Click **Start Voice Assistant**, then press **F4** and speak a command. Feedback appears in the console.
 
 ### Example Commands
 
-#### Tempo Control
-- `"set tempo to 120"`
-- `"change bpm to 90"`
-- `"set bpm to 140"`
-- `"adjust tempo to 80"`
-
-#### Track Creation
-- `"create midi track"`
-- `"create audio track"`
-- `"add audio track"`
-- `"make midi track"`
-
-#### Instruments
-- `"add piano"`
-- `"add synth"`
-- `"add drums"`
-
-#### Effects
-- `"add reverb to track 2"`
-- `"add delay to track 1"`
-- `"add echo to track 3"`
-- `"add compressor to track 4"`
-
-#### Effect Parameters
-- `"set reverb dry/wet to 30%"`
-- `"set delay mix to 50"`
-- `"set compressor amount to 75%"`
-- `"set reverb wet to 80"`
-- `"set delay level to 25%"`
+- **Tempo:** "set tempo to 120", "change bpm to 90"
+- **Tracks:** "create midi track", "create audio track"
+- **Instruments:** "add piano", "add synth", "add drums"
+- **Effects:** "add reverb to track 2", "add delay to track 1"
+- **Parameters:** "set reverb dry/wet to 30%", "set delay mix to 50"
 
 ## Architecture
 
-AbletonML consists of several components:
+The system has moved from a Max for Live–only setup to an **OSC and macro-based** pipeline:
 
-1. **Electron Frontend**: A modern GUI for entering commands and visualizing the project state.
+- **`core/osc_controller.py`** — High-speed bridge to Ableton via the AbletonOSC Remote Script. Sends OSC over UDP (port 11000) for set tempo, create track, and other OSC-capable actions.
 
-2. **Python Backend**: Processes natural language commands and communicates with Ableton Live.
-   - NLP Module: Parses natural language commands
-   - Action Mapper: Maps parsed commands to actions
-   - Max Controller: Sends commands to Max for Live
+- **`core/macro_controller.py`** — UI automation for searching and loading devices. Uses PyAutoGUI to open Ableton’s browser search, type the device name, and select the first result (used when OSC cannot add instruments/effects).
 
-3. **Max for Live Device**: Receives commands from the Python backend and controls Ableton Live.
+- **`core/command_executor.py`** — Functional router: chooses OSC vs. macro execution based on intent. Routes `add_instrument` and `add_effect` to the macro controller; `set_tempo`, `create_track`, and `set_effect_param` to the OSC controller.
+
+- **`core/voice_listener.py`** — Background engine for the F4 wake-key and speech-to-text. Listens for the global F4 hotkey, captures microphone input, transcribes (e.g. Google Speech Recognition), then parses and executes via the command executor.
+
+- **`core/nlp.py`** and **`core/action_mapper.py`** — Natural language parsing and mapping of parsed commands to a sequence of actions.
 
 ## Communication Flow
 
-1. User enters a command in the Electron frontend
-2. Command is sent to the Python backend via Socket.IO
-3. NLP module parses the command
-4. Action mapper converts the parsed command to actions
-5. Max controller sends the actions to the Max for Live device via UDP
-6. Max for Live device executes the actions in Ableton Live
-7. Updated project state is sent back to the frontend
+1. User types a command or presses F4 and speaks.
+2. (Voice path) F4 → microphone → speech-to-text → same pipeline as text.
+3. NLP parses the command; action mapper produces a list of actions.
+4. Command executor routes each action: OSC for tempo/tracks, macro for add instrument/effect.
+5. OSC controller sends UDP/OSC to AbletonOSC; macro controller sends keystrokes to Ableton’s UI.
+6. GUI console and project state update.
 
 ## Troubleshooting
 
 ### Tkinter Import Error (macOS)
 ```bash
-# Install tkinter support
 brew install python-tk@3.13
-# Recreate virtual environment
-rm -rf venv
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+# Recreate venv if needed, then pip install -r requirements.txt
 ```
 
-### Max for Live Device Not Receiving Commands
-- Make sure the Max for Live device is loaded in Ableton Live
-- Check that UDP port 7400 is not blocked by a firewall
-- Restart the AbletonML application and Ableton Live
+### OSC / Ableton Not Responding
+- Ensure AbletonOSC is selected in Live → Preferences → Link/Tempo/MIDI.
+- Port 11000 must be free; restart Live and the app if needed.
 
-### Commands Not Being Recognized
-- Try using simpler commands
-- Check the exact wording in the example commands
-- Make sure the NLP module is properly initialized
+### Voice or Macro Not Working
+- Grant **Accessibility** to Terminal/IDE (see OS Permissions above).
+- For voice: check microphone permissions and that you pressed F4 before speaking.
 
-### Testing Without Ableton Live
-The system works in simulation mode when Ableton Live is not connected:
+### Testing Without a Microphone
+Run the full system check (OSC + macro only):
 ```bash
-python test_simple_gui.py
+python full_system_check.py
 ```
 
 ## Development
 
 ### Project Structure
 
-- `electron/`: Electron frontend files
-- `backend/`: Python backend server
-- `core/`: Core modules (NLP, action mapper, controller)
-- `max/`: Max for Live device files
+- `app/` — Simple Tk GUI (`simple_gui.py`).
+- `core/` — Core logic: `osc_controller.py`, `macro_controller.py`, `command_executor.py`, `voice_listener.py`, `nlp.py`, `action_mapper.py`.
+- `backend/` — Optional Flask/Socket.IO server for Electron frontend.
+- `electron/` — Optional Electron frontend.
+- `max/` — Legacy Max for Live device files (optional when using AbletonOSC).
 
 ### Adding New Commands
 
-To add support for new commands:
-
-1. Update the NLP module in `core/nlp.py` to recognize the new command
-2. Add a mapping function in `core/action_mapper.py`
-3. Implement the action in `core/max_controller.py`
-4. Update the Max for Live device to handle the new action
+1. Update `core/nlp.py` to recognize the new command.
+2. Add a mapping in `core/action_mapper.py`.
+3. Implement the action in `core/osc_controller.py` (OSC) or use `core/macro_controller.py` (UI automation) and route it in `core/command_executor.py`.
 
 ## License
 
@@ -185,8 +141,6 @@ MIT
 ## Acknowledgements
 
 - [Ableton Live](https://www.ableton.com/en/live/)
-- [Max for Live](https://www.ableton.com/en/live/max-for-live/)
+- [AbletonOSC](https://github.com/ideoforms/AbletonOSC)
 - [Electron](https://www.electronjs.org/)
-- [Flask](https://flask.palletsprojects.com/)
-- [Socket.IO](https://socket.io/)
-- [spaCy](https://spacy.io/) 
+- [spaCy](https://spacy.io/)
